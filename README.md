@@ -23,7 +23,7 @@ This calculator follows a specific two-step process as requested:
 
 ## 🚀 How to Use
 Since this is a single-file application, you can use it instantly:
- * Download: Download the gst_calculator.html file.
+ * Download: Download the index.html file.
  * Open: Open the file in any modern web browser (like Chrome, Firefox, or Safari).
 That's it! No installation or setup is required.
 ## 🛠️ Technologies Used
