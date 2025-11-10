@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GST & Service Charge Calculator</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Inter font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Apply Inter font */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Simple spinner for loading state */
+        .spinner {
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #ffffff;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <!-- Calculator Card -->
+    <div class="bg-white p-6 md:p-8 rounded-xl shadow-lg w-full max-w-md">
+        
+        <h1 class="text-2xl font-bold text-center text-gray-800 mb-2">
+            Bill Calculator
+        </h1>
+        <p class="text-center text-gray-500 mb-6">
+            Calculate GST & Service Charge
+        </p>
+
+        <div class="space-y-4">
+            <!-- Subtotal Amount Input -->
+            <div>
+                <label for="subtotal" class="block text-sm font-medium text-gray-700 mb-1">
+                    Subtotal Amount
+                </label>
+                <div class="relative rounded-md shadow-sm">
+                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                        <span class="text-gray-500 sm:text-sm">$</span>
+                    </div>
+                    <input type="number" id="subtotal"
+                           class="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="100.00"
+                           aria-label="Subtotal Amount">
+                </div>
+            </div>
+
+            <!-- Service Charge Rate Input -->
+            <div>
+                <label for="serviceChargeRate" class="block text-sm font-medium text-gray-700 mb-1">
+                    Service Charge (%)
+                </label>
+                <div class="relative rounded-md shadow-sm">
+                    <input type="number" id="serviceChargeRate"
+                           class="w-full pr-8 pl-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           value="10"
+                           aria-label="Service Charge Rate">
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                        <span class="text-gray-500 sm:text-sm">%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GST Rate Input -->
+            <div>
+                <label for="gstRate" class="block text-sm font-medium text-gray-700 mb-1">
+                    GST (%)
+                </label>
+                <div class="relative rounded-md shadow-sm">
+                    <input type="number" id="gstRate"
+                           class="w-full pr-8 pl-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           value="9"
+                           aria-label="GST Rate">
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                        <span class="text-gray-500 sm:text-sm">%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calculate Button -->
+            <button id="calculateBtn"
+                    class="w-full bg-blue-600 text-white py-2.5 px-4 rounded-md font-semibold shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out flex items-center justify-center space-x-2">
+                <span>Calculate</span>
+                <div id="spinner" class="spinner hidden"></div>
+            </button>
+            
+            <!-- Error Message Box -->
+            <div id="error-message" class="hidden p-3 bg-red-100 border border-red-300 text-red-700 rounded-md text-sm">
+                <!-- Error text will be inserted here -->
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="hidden mt-6 pt-6 border-t border-gray-200 space-y-3">
+            <h2 class="text-lg font-semibold text-gray-800 mb-3">Calculation Details:</h2>
+            
+            <!-- Subtotal -->
+            <div class="flex justify-between items-center text-gray-600">
+                <span>Subtotal:</span>
+                <span id="out-subtotal" class="font-medium text-gray-900">$0.00</span>
+            </div>
+
+            <!-- Service Charge -->
+            <div class="flex justify-between items-center text-gray-600">
+                <span id="out-service-charge-label">Service Charge:</span>
+                <span id="out-service-charge" class="font-medium text-gray-900">+$0.00</span>
+            </div>
+            
+            <!-- Pre-GST Total -->
+            <div class="flex justify-between items-center text-gray-600 pt-2 border-t border-dashed">
+                <span class="font-medium">Total before GST:</span>
+                <span id="out-pre-gst" class="font-medium text-gray-900">$0.00</span>
+            </div>
+
+            <!-- GST -->
+            <div class="flex justify-between items-center text-gray-600">
+                <span id="out-gst-label">GST:</span>
+                <span id="out-gst" class="font-medium text-gray-900">+$0.00</span>
+            </div>
+
+            <!-- Final Total -->
+            <div class="flex justify-between items-center mt-4 pt-4 border-t border-gray-300">
+                <span class="text-xl font-bold text-gray-900">Total Amount:</span>
+                <span id="out-total" class="text-2xl font-bold text-blue-600">$0.00</span>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get all necessary elements
+            const subtotalInput = document.getElementById('subtotal');
+            const serviceChargeRateInput = document.getElementById('serviceChargeRate');
+            const gstRateInput = document.getElementById('gstRate');
+            const calculateBtn = document.getElementById('calculateBtn');
+            const resultsDiv = document.getElementById('results');
+            const errorMessageDiv = document.getElementById('error-message');
+            const spinner = document.getElementById('spinner');
+
+            // Output elements
+            const outSubtotal = document.getElementById('out-subtotal');
+            const outServiceChargeLabel = document.getElementById('out-service-charge-label');
+            const outServiceCharge = document.getElementById('out-service-charge');
+            const outPreGst = document.getElementById('out-pre-gst');
+            const outGstLabel = document.getElementById('out-gst-label');
+            const outGst = document.getElementById('out-gst');
+            const outTotal = document.getElementById('out-total');
+
+            // Helper function to format numbers as currency
+            function formatCurrency(amount) {
+                return '$' + amount.toFixed(2);
+            }
+            
+            // Helper to format with a plus sign
+            function formatCurrencyWithPlus(amount) {
+                return '+$' + amount.toFixed(2);
+            }
+            
+            // Helper to show/hide error
+            function showError(message) {
+                errorMessageDiv.textContent = message;
+                errorMessageDiv.classList.remove('hidden');
+            }
+            
+            function hideError() {
+                errorMessageDiv.classList.add('hidden');
+            }
+
+            // Main calculation function
+            function calculateTotal() {
+                // Show spinner, hide text
+                spinner.classList.remove('hidden');
+                calculateBtn.disabled = true;
+                
+                // Clear previous results and errors
+                resultsDiv.classList.add('hidden');
+                hideError();
+
+                // Get values
+                const subtotal = parseFloat(subtotalInput.value);
+                const serviceChargeRate = parseFloat(serviceChargeRateInput.value) || 0;
+                const gstRate = parseFloat(gstRateInput.value) || 0;
+
+                // --- Validation ---
+                if (isNaN(subtotal) || subtotal < 0) {
+                    showError('Please enter a valid positive number for the subtotal.');
+                    spinner.classList.add('hidden');
+                    calculateBtn.disabled = false;
+                    return;
+                }
+                
+                if (serviceChargeRate < 0 || gstRate < 0) {
+                    showError('Rates cannot be negative.');
+                    spinner.classList.add('hidden');
+                    calculateBtn.disabled = false;
+                    return;
+                }
+
+                // --- Calculation Logic ---
+                // 1. Apply Service Charge
+                const serviceChargeAmount = subtotal * (serviceChargeRate / 100);
+                
+                // 2. Calculate amount before GST
+                const subtotalAfterService = subtotal + serviceChargeAmount;
+                
+                // 3. Apply GST on the (Subtotal + Service Charge)
+                const gstAmount = subtotalAfterService * (gstRate / 100);
+                
+                // 4. Calculate Final Total
+                const totalAmount = subtotalAfterService + gstAmount;
+
+                // --- Update the DOM ---
+                // Using a short timeout to simulate work and show the spinner
+                setTimeout(() => {
+                    outSubtotal.textContent = formatCurrency(subtotal);
+                    
+                    outServiceChargeLabel.textContent = `Service Charge (${serviceChargeRate}%):`;
+                    outServiceCharge.textContent = formatCurrencyWithPlus(serviceChargeAmount);
+                    
+                    outPreGst.textContent = formatCurrency(subtotalAfterService);
+                    
+                    outGstLabel.textContent = `GST (${gstRate}%):`;
+                    outGst.textContent = formatCurrencyWithPlus(gstAmount);
+                    
+                    outTotal.textContent = formatCurrency(totalAmount);
+
+                    // Show results and hide spinner
+                    resultsDiv.classList.remove('hidden');
+                    spinner.classList.add('hidden');
+                    calculateBtn.disabled = false;
+                }, 300); // 300ms delay
+            }
+
+            // Add event listener to the button
+            calculateBtn.addEventListener('click', calculateTotal);
+            
+            // Allow pressing Enter to calculate
+            subtotalInput.addEventListener('keydown', (e) => e.key === 'Enter' && calculateTotal());
+            serviceChargeRateInput.addEventListener('keydown', (e) => e.key === 'Enter' && calculateTotal());
+            gstRateInput.addEventListener('keydown', (e) => e.key === 'Enter' && calculateTotal());
+        });
+    </script>
+</body>
+</html>
+
