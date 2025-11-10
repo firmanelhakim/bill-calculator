@@ -1,7 +1,7 @@
 # GST & Service Charge Calculator
 A simple, clean, and mobile-friendly web app to calculate a final bill amount. This tool applies a service charge to the subtotal first, and then applies GST to the new total.
 ## ✨ Preview
-(Add a screenshot of your app here!)
+https://firmanelhakim.github.io/bill-calculator/
 ## 📋 Features
  * Subtotal Input: Enter your base bill amount.
  * Customizable Rates: Set custom percentages for both Service Charge and GST.
