@@ -54,7 +54,8 @@
                     <input type="number" id="subtotal"
                            class="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                            placeholder="100.00"
-                           aria-label="Subtotal Amount">
+                           aria-label="Subtotal Amount"
+                           value="286.20"> <!-- Pre-filled with your test value -->
                 </div>
             </div>
 
@@ -160,14 +161,14 @@
             const outGst = document.getElementById('out-gst');
             const outTotal = document.getElementById('out-total');
 
-            // Helper function to format numbers as currency
-            function formatCurrency(amount) {
-                return '$' + amount.toFixed(2);
+            // Helper function to format CENTS into a currency string
+            function formatCentsToCurrency(cents) {
+                return '$' + (cents / 100).toFixed(2);
             }
             
-            // Helper to format with a plus sign
-            function formatCurrencyWithPlus(amount) {
-                return '+$' + amount.toFixed(2);
+            // Helper to format CENTS with a plus sign
+            function formatCentsToCurrencyWithPlus(cents) {
+                return '+$' + (cents / 100).toFixed(2);
             }
             
             // Helper to show/hide error
@@ -178,6 +179,16 @@
             
             function hideError() {
                 errorMessageDiv.classList.add('hidden');
+            }
+            
+            // Helper to parse currency to cents
+            function parseCurrencyToCents(value) {
+                const floatValue = parseFloat(value);
+                if (isNaN(floatValue)) {
+                    return NaN;
+                }
+                // Convert to cents and round to nearest whole cent to avoid precision issues
+                return Math.round(floatValue * 100);
             }
 
             // Main calculation function
@@ -191,12 +202,12 @@
                 hideError();
 
                 // Get values
-                const subtotal = parseFloat(subtotalInput.value);
+                const subtotalInCents = parseCurrencyToCents(subtotalInput.value);
                 const serviceChargeRate = parseFloat(serviceChargeRateInput.value) || 0;
                 const gstRate = parseFloat(gstRateInput.value) || 0;
 
                 // --- Validation ---
-                if (isNaN(subtotal) || subtotal < 0) {
+                if (isNaN(subtotalInCents) || subtotalInCents < 0) {
                     showError('Please enter a valid positive number for the subtotal.');
                     spinner.classList.add('hidden');
                     calculateBtn.disabled = false;
@@ -210,33 +221,36 @@
                     return;
                 }
 
-                // --- Calculation Logic ---
+                // --- Calculation Logic (in Cents) ---
+                
                 // 1. Apply Service Charge
-                const serviceChargeAmount = subtotal * (serviceChargeRate / 100);
+                // Use Math.round for standard rounding on service charge
+                const serviceChargeAmountInCents = Math.round(subtotalInCents * (serviceChargeRate / 100));
                 
                 // 2. Calculate amount before GST
-                const subtotalAfterService = subtotal + serviceChargeAmount;
+                const subtotalAfterServiceInCents = subtotalInCents + serviceChargeAmountInCents;
                 
                 // 3. Apply GST on the (Subtotal + Service Charge)
-                const gstAmount = subtotalAfterService * (gstRate / 100);
+                // *** MODIFIED: Use Math.ceil to "round up" to match the user's receipt ***
+                const gstAmountInCents = Math.ceil(subtotalAfterServiceInCents * (gstRate / 100));
                 
                 // 4. Calculate Final Total
-                const totalAmount = subtotalAfterService + gstAmount;
+                const totalAmountInCents = subtotalAfterServiceInCents + gstAmountInCents;
 
                 // --- Update the DOM ---
                 // Using a short timeout to simulate work and show the spinner
                 setTimeout(() => {
-                    outSubtotal.textContent = formatCurrency(subtotal);
+                    outSubtotal.textContent = formatCentsToCurrency(subtotalInCents);
                     
                     outServiceChargeLabel.textContent = `Service Charge (${serviceChargeRate}%):`;
-                    outServiceCharge.textContent = formatCurrencyWithPlus(serviceChargeAmount);
+                    outServiceCharge.textContent = formatCentsToCurrencyWithPlus(serviceChargeAmountInCents);
                     
-                    outPreGst.textContent = formatCurrency(subtotalAfterService);
+                    outPreGst.textContent = formatCentsToCurrency(subtotalAfterServiceInCents);
                     
                     outGstLabel.textContent = `GST (${gstRate}%):`;
-                    outGst.textContent = formatCurrencyWithPlus(gstAmount);
+                    outGst.textContent = formatCentsToCurrencyWithPlus(gstAmountInCents);
                     
-                    outTotal.textContent = formatCurrency(totalAmount);
+                    outTotal.textContent = formatCentsToCurrency(totalAmountInCents);
 
                     // Show results and hide spinner
                     resultsDiv.classList.remove('hidden');
@@ -256,4 +270,3 @@
     </script>
 </body>
 </html>
-
